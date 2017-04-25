@@ -14,7 +14,7 @@ public class UFOScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         this.player = FindObjectOfType<PlayerScript>();
-        InvokeRepeating("MaybeRunBeam", 3f, 6f);
+        InvokeRepeating("MaybeRunBeam", 2f, 2f);
     }
 	
 	// Update is called once per frame
@@ -34,7 +34,7 @@ public class UFOScript : MonoBehaviour {
 
     void MaybeRunBeam()
     {
-        if (Random.value > .25)
+        if (Random.value > .5 && !this.beamActive)
         {
             this.ActivateBeam();
             Invoke("DeactivateBeam", 3f);
@@ -70,5 +70,31 @@ public class UFOScript : MonoBehaviour {
     void MoveRight ()
     {
         transform.Translate(new Vector3(speed_force / 100, 0, 0));
+    }
+
+    public void Abduct(Transform transform)
+    {
+        StartCoroutine(Abductor(transform));
+    }
+
+    IEnumerator Abductor(Transform other_transform)
+    {
+        float startTime = Time.time;
+        float journeyLength = Vector3.Distance(other_transform.position, this.transform.position);
+        while (other_transform.position != this.transform.position)
+        {
+            float distCovered = (Time.time - startTime) * 2.0f;
+            float fracJourney = distCovered / journeyLength;
+            other_transform.position = Vector3.Lerp(other_transform.position, this.transform.position, fracJourney);
+            other_transform.localScale = Vector3.Lerp(
+                other_transform.localScale,
+                new Vector3(0, 0, this.transform.localScale.z),
+                fracJourney
+            );
+
+            yield return null;
+        }
+        
+        Debug.Log("GAME OVER");
     }
 }

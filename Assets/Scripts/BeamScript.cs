@@ -36,4 +36,9 @@ public class BeamScript : MonoBehaviour {
             );
         }
     }
+
+    public Transform getUFO()
+    {
+        return this.transform.parent.transform;
+    }
 }
