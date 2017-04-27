@@ -37,8 +37,13 @@ public class BeamScript : MonoBehaviour {
         }
     }
 
-    public Transform getUFO()
+    public GameObject getUFO()
     {
-        return this.transform.parent.transform;
+        return this.transform.parent.gameObject;
+    }
+
+    void OnTriggerEnter(Collider collider)
+    {
+        this.getUFO().GetComponent<UFOScript>().Abduct(collider.gameObject);
     }
 }

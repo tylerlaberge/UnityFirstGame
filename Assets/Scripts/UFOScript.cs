@@ -1,14 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UFOScript : MonoBehaviour {
 
     public float speed_force;
-
     public Transform beam;
 
     private PlayerScript player;
+    private bool playerAbducted = false;
     private bool beamActive = false;
 
 	// Use this for initialization
@@ -19,7 +20,7 @@ public class UFOScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        if (!this.beamActive)
+        if (!this.playerAbducted && !this.beamActive)
         {
             if (player.transform.position.x > this.transform.position.x)
             {
@@ -34,7 +35,7 @@ public class UFOScript : MonoBehaviour {
 
     void MaybeRunBeam()
     {
-        if (Random.value > .5 && !this.beamActive)
+        if (UnityEngine.Random.value > .5 && !this.beamActive)
         {
             this.ActivateBeam();
             Invoke("DeactivateBeam", 3f);
@@ -72,29 +73,33 @@ public class UFOScript : MonoBehaviour {
         transform.Translate(new Vector3(speed_force / 100, 0, 0));
     }
 
-    public void Abduct(Transform transform)
+    public void Abduct(GameObject gameObject)
     {
-        StartCoroutine(Abductor(transform));
+        if (gameObject.tag == "Player" && !this.playerAbducted)
+        {
+            this.playerAbducted = true;
+            StartCoroutine(Abductor(gameObject, () => Destroy(gameObject)));
+            Debug.Log("GAME OVER");
+        }
     }
 
-    IEnumerator Abductor(Transform other_transform)
+    IEnumerator Abductor(GameObject other, Action callback)
     {
         float startTime = Time.time;
-        float journeyLength = Vector3.Distance(other_transform.position, this.transform.position);
-        while (other_transform.position != this.transform.position)
+        float journeyLength = Vector3.Distance(other.transform.position, this.transform.position);
+        while (other.transform.position != this.transform.position)
         {
             float distCovered = (Time.time - startTime) * 2.0f;
             float fracJourney = distCovered / journeyLength;
-            other_transform.position = Vector3.Lerp(other_transform.position, this.transform.position, fracJourney);
-            other_transform.localScale = Vector3.Lerp(
-                other_transform.localScale,
+            other.transform.position = Vector3.Lerp(other.transform.position, this.transform.position, fracJourney);
+            other.transform.localScale = Vector3.Lerp(
+                other.transform.localScale,
                 new Vector3(0, 0, this.transform.localScale.z),
                 fracJourney
             );
 
             yield return null;
         }
-        
-        Debug.Log("GAME OVER");
+        callback();
     }
 }
