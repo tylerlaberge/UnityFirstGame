@@ -51,5 +51,9 @@ public class BeamScript : MonoBehaviour {
                 this.getUFO().GetComponent<UFOScript>().Abduct(collider.gameObject);
             }
         }
+        else
+        {
+            this.getUFO().GetComponent<UFOScript>().Abduct(collider.gameObject);
+        }
     }
 }
