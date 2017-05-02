@@ -11,6 +11,7 @@ public class UFOScript : MonoBehaviour {
     private PlayerScript player;
     private bool playerAbducted = false;
     private bool beamActive = false;
+    private bool movementLocked = false;
 
 	// Use this for initialization
 	void Start () {
@@ -20,7 +21,7 @@ public class UFOScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        if (!this.playerAbducted && !this.beamActive)
+        if (!this.playerAbducted && !this.movementLocked)
         {
             if (player.transform.position.x > this.transform.position.x)
             {
@@ -37,13 +38,23 @@ public class UFOScript : MonoBehaviour {
     {
         if (UnityEngine.Random.value > .5 && !this.beamActive)
         {
+            this.ClearInvokes();
+
             this.ActivateBeam();
             Invoke("DeactivateBeam", 3f);
         }
     }
 
+    void ClearInvokes()
+    {
+        CancelInvoke("MoveRight");
+        CancelInvoke("MoveLeft");
+        CancelInvoke("DeactivateBeam");
+        CancelInvoke("UnlockMovement");
+    }
     void ActivateBeam()
     {
+        this.LockMovement();
         this.beamActive = true;
         StartCoroutine("BeamEngine");
     }
@@ -51,12 +62,22 @@ public class UFOScript : MonoBehaviour {
     void DeactivateBeam()
     {
         this.beamActive = false;
-        StopCoroutine("BeamEngine");
+        Invoke("UnlockMovement", 1f);
+    }
+
+    void LockMovement()
+    {
+        this.movementLocked = true;
+    }
+
+    void UnlockMovement()
+    {
+        this.movementLocked = false;
     }
 
     IEnumerator BeamEngine()
     {
-        while(true)
+        while(this.beamActive)
         {
             Instantiate(beam, this.transform.position, this.transform.rotation, this.transform);
             yield return new WaitForSeconds(0.05f);
@@ -78,12 +99,16 @@ public class UFOScript : MonoBehaviour {
         if (gameObject.tag == "Player" && !this.playerAbducted)
         {
             this.playerAbducted = true;
-            StartCoroutine(Abductor(gameObject, () => Destroy(gameObject)));
+            StartCoroutine(Abductor(gameObject));
             Debug.Log("GAME OVER");
+        }
+        else
+        {
+            StartCoroutine(Abductor(gameObject));
         }
     }
 
-    IEnumerator Abductor(GameObject other, Action callback)
+    IEnumerator Abductor(GameObject other)
     {
         float startTime = Time.time;
         float journeyLength = Vector3.Distance(other.transform.position, this.transform.position);
@@ -100,6 +125,5 @@ public class UFOScript : MonoBehaviour {
 
             yield return null;
         }
-        callback();
     }
 }
