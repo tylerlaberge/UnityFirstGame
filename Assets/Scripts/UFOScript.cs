@@ -36,7 +36,7 @@ public class UFOScript : MonoBehaviour {
 
     void MaybeRunBeam()
     {
-        if (UnityEngine.Random.value > .5 && !this.beamActive)
+        if (UnityEngine.Random.value > .75 && !this.beamActive)
         {
             this.ClearInvokes();
 

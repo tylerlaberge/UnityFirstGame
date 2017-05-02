@@ -44,6 +44,12 @@ public class BeamScript : MonoBehaviour {
 
     void OnTriggerEnter(Collider collider)
     {
-        this.getUFO().GetComponent<UFOScript>().Abduct(collider.gameObject);
+        if (collider.gameObject.tag == "Floor")
+        {
+            if (Mathf.Abs(this.transform.position.x - collider.transform.position.x) <= this.width)
+            {
+                this.getUFO().GetComponent<UFOScript>().Abduct(collider.gameObject);
+            }
+        }
     }
 }
