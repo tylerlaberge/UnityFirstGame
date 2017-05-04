@@ -13,10 +13,13 @@ public class UFOScript : MonoBehaviour {
     private bool beamActive = false;
     private bool movementLocked = false;
 
+    private float maxBeamInterval = 9.0f;
+    private float timeOfLastBeam = 0.0f;
+
 	// Use this for initialization
 	void Start () {
         this.player = FindObjectOfType<PlayerScript>();
-        InvokeRepeating("MaybeRunBeam", 2f, 2f);
+        InvokeRepeating("MaybeRunBeam", 3f, 3f);
     }
 	
 	// Update is called once per frame
@@ -36,10 +39,10 @@ public class UFOScript : MonoBehaviour {
 
     void MaybeRunBeam()
     {
-        if (UnityEngine.Random.value > .75 && !this.beamActive)
+
+        if ((UnityEngine.Random.value > .5 && !this.beamActive) || ((Time.time - this.timeOfLastBeam) >= this.maxBeamInterval))
         {
             this.ClearInvokes();
-
             this.ActivateBeam();
             Invoke("DeactivateBeam", 3f);
         }
@@ -51,6 +54,7 @@ public class UFOScript : MonoBehaviour {
         CancelInvoke("MoveLeft");
         CancelInvoke("DeactivateBeam");
         CancelInvoke("UnlockMovement");
+        CancelInvoke("BeamEngine");
     }
     void ActivateBeam()
     {
@@ -62,6 +66,7 @@ public class UFOScript : MonoBehaviour {
     void DeactivateBeam()
     {
         this.beamActive = false;
+        this.timeOfLastBeam = Time.time;
         Invoke("UnlockMovement", 1f);
     }
 
