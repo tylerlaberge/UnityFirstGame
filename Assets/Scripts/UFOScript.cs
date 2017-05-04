@@ -13,13 +13,14 @@ public class UFOScript : MonoBehaviour {
     private bool beamActive = false;
     private bool movementLocked = false;
 
-    private float maxBeamInterval = 9.0f;
+    private float minBeamInterval = 4.0f;
+    private float maxBeamInterval = 8.0f;
     private float timeOfLastBeam = 0.0f;
 
 	// Use this for initialization
 	void Start () {
         this.player = FindObjectOfType<PlayerScript>();
-        InvokeRepeating("MaybeRunBeam", 3f, 3f);
+        InvokeRepeating("MaybeRunBeam", this.minBeamInterval, this.minBeamInterval);
     }
 	
 	// Update is called once per frame
@@ -28,11 +29,11 @@ public class UFOScript : MonoBehaviour {
         {
             if (player.transform.position.x > this.transform.position.x)
             {
-                Invoke("MoveRight", 0.5f);
+                Invoke("MoveRight", 0.25f);
             }
             else if (player.transform.position.x < this.transform.position.x)
             {
-                Invoke("MoveLeft", 0.5f);
+                Invoke("MoveLeft", 0.25f);
             }
         }
 	}
@@ -44,7 +45,7 @@ public class UFOScript : MonoBehaviour {
         {
             this.ClearInvokes();
             this.ActivateBeam();
-            Invoke("DeactivateBeam", 3f);
+            Invoke("DeactivateBeam", 2f);
         }
     }
 

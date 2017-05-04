@@ -8,6 +8,7 @@ public class PlayerScript : MonoBehaviour {
     	
 	void FixedUpdate () {
         float translation = Input.GetAxis("Horizontal") * speed_force / 100;
+
         transform.Translate(translation, 0, 0);
 	}
 }
