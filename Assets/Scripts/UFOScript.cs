@@ -40,8 +40,7 @@ public class UFOScript : MonoBehaviour {
 
     void MaybeRunBeam()
     {
-
-        if ((UnityEngine.Random.value > .5 && !this.beamActive) || ((Time.time - this.timeOfLastBeam) >= this.maxBeamInterval))
+        if (((UnityEngine.Random.value > .75 && !this.beamActive) || ((Time.time - this.timeOfLastBeam) >= this.maxBeamInterval)))
         {
             this.ClearInvokes();
             this.ActivateBeam();
