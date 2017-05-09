@@ -8,8 +8,9 @@ public class UFOScript : MonoBehaviour {
     public float speed_force;
     public Transform beam;
     public Transform stopper;
+    public float maxPlayerDistance;
 
-    private PlayerScript player;
+    private PlayerScript[] players;
     private bool playerAbducted = false;
     private bool beamActive = false;
     private bool movementLocked = false;
@@ -18,26 +19,47 @@ public class UFOScript : MonoBehaviour {
     private float maxBeamInterval = 8.0f;
     private float timeOfLastBeam = 0.0f;
 
-	// Use this for initialization
 	void Start () {
-        this.player = FindObjectOfType<PlayerScript>();
+        this.players = FindObjectsOfType<PlayerScript>();
         InvokeRepeating("MaybeRunBeam", this.minBeamInterval, this.minBeamInterval);
     }
 	
-	// Update is called once per frame
 	void FixedUpdate () {
         if (!this.playerAbducted && !this.movementLocked)
         {
-            if (player.transform.position.x > this.transform.position.x)
+            PlayerScript nearest_player = this.GetNearestPlayer();
+
+            if (Math.Abs(nearest_player.transform.position.x - this.transform.position.x) > this.maxPlayerDistance)
+            {
+                this.transform.position = new Vector3(nearest_player.transform.position.x, this.transform.position.y, this.transform.position.z);
+            }
+            if (nearest_player.transform.position.x > this.transform.position.x)
             {
                 Invoke("MoveRight", 0.25f);
             }
-            else if (player.transform.position.x < this.transform.position.x)
+            else if (nearest_player.transform.position.x < this.transform.position.x)
             {
                 Invoke("MoveLeft", 0.25f);
             }
         }
 	}
+
+    PlayerScript GetNearestPlayer()
+    {
+        PlayerScript closest_player = players[0];
+        double min_distance = Double.PositiveInfinity; 
+        foreach (PlayerScript player in this.players)
+        {
+            double distance = Math.Abs(player.transform.position.x - this.transform.position.x);
+            if (distance < min_distance)
+            {
+                closest_player = player;
+                min_distance = distance;
+            }
+        }
+
+        return closest_player;
+    }
 
     void MaybeRunBeam()
     {
@@ -62,7 +84,6 @@ public class UFOScript : MonoBehaviour {
             this.transform.rotation
         );
         stopper_object.localScale = new Vector3(this.transform.localScale.x*1.1f, this.transform.localScale.y + this.beam.gameObject.GetComponent<BeamScript>().range/2, this.transform.localScale.z);
-
     }
 
     void ClearInvokes()
@@ -118,7 +139,7 @@ public class UFOScript : MonoBehaviour {
 
     public void Abduct(GameObject gameObject)
     {
-        if (gameObject.tag == "Player" && !this.playerAbducted)
+        if (!this.playerAbducted && (gameObject.tag == "PlayerOne" || gameObject.tag == "PlayerTwo"))
         {
             this.playerAbducted = true;
             StartCoroutine(Abductor(gameObject));
@@ -134,7 +155,7 @@ public class UFOScript : MonoBehaviour {
     {
         float startTime = Time.time;
         float journeyLength = Vector3.Distance(other.transform.position, this.transform.position);
-        while (other.transform.position != this.transform.position)
+        while (other != null && other.transform.position != this.transform.position)
         {
             float distCovered = (Time.time - startTime) * 2.0f;
             float fracJourney = distCovered / journeyLength;
@@ -147,5 +168,6 @@ public class UFOScript : MonoBehaviour {
 
             yield return null;
         }
+        Destroy(other);
     }
 }

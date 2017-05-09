@@ -6,19 +6,19 @@ public class TeleporterScript : MonoBehaviour {
 
     public Transform target;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
+    void Update()
+    {
+        if (this.target == null)
+        {
+            GameObject stopper = (GameObject) Resources.Load("prefabs/Stopper", typeof(GameObject));
+            GameObject stopper_instance = Instantiate(stopper, this.transform.position, this.transform.rotation);
+            stopper_instance.transform.localScale = this.transform.localScale;     
+            Destroy(this.gameObject);
+        }
+    }
     void OnTriggerEnter(Collider collider)
     {
-        if (collider.gameObject.tag == "Player" || collider.gameObject.tag == "UFO")
+        if (collider.gameObject.tag == "PlayerOne" || collider.gameObject.tag == "PlayerTwo")
         {
             collider.gameObject.transform.position = target.position;
         }
