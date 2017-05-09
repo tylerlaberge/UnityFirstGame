@@ -7,6 +7,7 @@ public class UFOScript : MonoBehaviour {
 
     public float speed_force;
     public Transform beam;
+    public Transform stopper;
 
     private PlayerScript player;
     private bool playerAbducted = false;
@@ -45,7 +46,23 @@ public class UFOScript : MonoBehaviour {
             this.ClearInvokes();
             this.ActivateBeam();
             Invoke("DeactivateBeam", 2f);
+            Invoke("CreateStopper", 2f);
         }
+    }
+
+    void CreateStopper()
+    {
+        Transform stopper_object = Instantiate(
+            stopper,
+            new Vector3(
+                this.transform.position.x, 
+                this.transform.position.y - this.beam.gameObject.GetComponent<BeamScript>().range, 
+                this.transform.position.z
+            ),
+            this.transform.rotation
+        );
+        stopper_object.localScale = new Vector3(this.transform.localScale.x*1.1f, this.transform.localScale.y + this.beam.gameObject.GetComponent<BeamScript>().range/2, this.transform.localScale.z);
+
     }
 
     void ClearInvokes()
