@@ -143,7 +143,17 @@ public class UFOScript : MonoBehaviour {
         {
             this.playerAbducted = true;
             StartCoroutine(Abductor(gameObject));
-            Debug.Log("GAME OVER");
+
+            if (gameObject.tag == "PlayerOne")
+            {
+                Debug.Log("Player Two Wins!");
+            }
+            else
+            {
+                Debug.Log("Player One Wins!");
+            }
+            
+            CancelInvoke("MaybeRunBeam");
         }
         else
         {
