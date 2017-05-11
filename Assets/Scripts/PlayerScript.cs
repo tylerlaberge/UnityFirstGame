@@ -2,10 +2,13 @@
 
 public class PlayerScript : MonoBehaviour {
 
-    public float speed;
+    public float speed;  // The speed of this player.
 
-    private string axis;
+    private string axis;  // The name of the input axis associated with this player.
 
+    /*
+     * Initialize axis field based on if this is a player one or player two prefab.
+     */
     void Start()
     {
         if (this.gameObject.tag == "PlayerOne")
@@ -17,7 +20,10 @@ public class PlayerScript : MonoBehaviour {
             this.axis = "HorizontalTwo";
         }
     }
-    	
+    
+    /*
+     * Every fixed update just move in the direction the player input is indicating.
+     */
 	void FixedUpdate () {
         float translation = Input.GetAxis(this.axis) * speed / 100;
 
