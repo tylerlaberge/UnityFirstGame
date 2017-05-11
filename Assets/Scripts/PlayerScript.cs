@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerScript : MonoBehaviour {
 
-    public float speed_force;
+    public float speed;
 
     private string axis;
 
@@ -21,7 +19,7 @@ public class PlayerScript : MonoBehaviour {
     }
     	
 	void FixedUpdate () {
-        float translation = Input.GetAxis(this.axis) * speed_force / 100;
+        float translation = Input.GetAxis(this.axis) * speed / 100;
 
         transform.Translate(translation, 0, 0);
 	}

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class UFOScript : MonoBehaviour {
 
-    public float speed_force;
+    public float speed;
     public Transform beam;
-    public Transform stopper;
     public float maxPlayerDistance;
 
     private PlayerScript[] players;
+
     private bool playerAbducted = false;
     private bool beamActive = false;
     private bool movementLocked = false;
@@ -18,6 +17,8 @@ public class UFOScript : MonoBehaviour {
     private float minBeamInterval = 4.0f;
     private float maxBeamInterval = 8.0f;
     private float timeOfLastBeam = 0.0f;
+    private float timeofLastTargetChange = 0.0f;
+    private int targetPlayerIndex = 0;
 
 	void Start () {
         this.players = FindObjectsOfType<PlayerScript>();
@@ -27,38 +28,64 @@ public class UFOScript : MonoBehaviour {
 	void FixedUpdate () {
         if (!this.playerAbducted && !this.movementLocked)
         {
-            PlayerScript nearest_player = this.GetNearestPlayer();
-
-            if (Math.Abs(nearest_player.transform.position.x - this.transform.position.x) > this.maxPlayerDistance)
-            {
-                this.transform.position = new Vector3(nearest_player.transform.position.x, this.transform.position.y, this.transform.position.z);
-            }
-            if (nearest_player.transform.position.x > this.transform.position.x)
-            {
-                Invoke("MoveRight", 0.25f);
-            }
-            else if (nearest_player.transform.position.x < this.transform.position.x)
-            {
-                Invoke("MoveLeft", 0.25f);
-            }
+            PlayerScript targetPlayer = this.ChooseTarget();
+            this.FollowTarget(targetPlayer);
         }
 	}
 
-    PlayerScript GetNearestPlayer()
+    PlayerScript ChooseTarget()
     {
-        PlayerScript closest_player = players[0];
-        double min_distance = Double.PositiveInfinity; 
-        foreach (PlayerScript player in this.players)
+        if ((Time.time - this.timeofLastTargetChange) > 5)
         {
-            double distance = Math.Abs(player.transform.position.x - this.transform.position.x);
-            if (distance < min_distance)
+            if (this.targetPlayerIndex < this.players.Length - 1)
             {
-                closest_player = player;
-                min_distance = distance;
+                this.targetPlayerIndex++;
             }
+            else
+            {
+                this.targetPlayerIndex = 0;
+            }
+            this.timeofLastTargetChange = Time.time;
         }
 
-        return closest_player;
+        return this.players[this.targetPlayerIndex];
+    }
+
+    void FollowTarget(PlayerScript target)
+    {
+        if (Math.Abs(target.transform.position.x - this.transform.position.x) > this.maxPlayerDistance)
+        {
+            this.transform.position = new Vector3(target.transform.position.x, this.transform.position.y, this.transform.position.z);
+        }
+        if (target.transform.position.x > this.transform.position.x)
+        {
+            Invoke("MoveRight", 0.25f);
+        }
+        else if (target.transform.position.x < this.transform.position.x)
+        {
+            Invoke("MoveLeft", 0.25f);
+        }
+    }
+
+
+    void MoveLeft()
+    {
+        transform.Translate(new Vector3(-speed / 100, 0, 0));
+    }
+
+    void MoveRight()
+    {
+        transform.Translate(new Vector3(speed / 100, 0, 0));
+    }
+
+    void LockMovement()
+    {
+        this.movementLocked = true;
+    }
+
+    void UnlockMovement()
+    {
+        this.movementLocked = false;
     }
 
     void MaybeRunBeam()
@@ -72,28 +99,6 @@ public class UFOScript : MonoBehaviour {
         }
     }
 
-    void CreateStopper()
-    {
-        Transform stopper_object = Instantiate(
-            stopper,
-            new Vector3(
-                this.transform.position.x, 
-                this.transform.position.y - this.beam.gameObject.GetComponent<BeamScript>().range, 
-                this.transform.position.z
-            ),
-            this.transform.rotation
-        );
-        stopper_object.localScale = new Vector3(this.transform.localScale.x*1.1f, this.transform.localScale.y + this.beam.gameObject.GetComponent<BeamScript>().range/2, this.transform.localScale.z);
-    }
-
-    void ClearInvokes()
-    {
-        CancelInvoke("MoveRight");
-        CancelInvoke("MoveLeft");
-        CancelInvoke("DeactivateBeam");
-        CancelInvoke("UnlockMovement");
-        CancelInvoke("BeamEngine");
-    }
     void ActivateBeam()
     {
         this.LockMovement();
@@ -106,35 +111,6 @@ public class UFOScript : MonoBehaviour {
         this.beamActive = false;
         this.timeOfLastBeam = Time.time;
         Invoke("UnlockMovement", 1f);
-    }
-
-    void LockMovement()
-    {
-        this.movementLocked = true;
-    }
-
-    void UnlockMovement()
-    {
-        this.movementLocked = false;
-    }
-
-    IEnumerator BeamEngine()
-    {
-        while(this.beamActive)
-        {
-            Instantiate(beam, this.transform.position, this.transform.rotation, this.transform);
-            yield return new WaitForSeconds(0.05f);
-        }
-    }
-
-    void MoveLeft()
-    {
-        transform.Translate(new Vector3(-speed_force / 100, 0, 0));
-    }
-
-    void MoveRight ()
-    {
-        transform.Translate(new Vector3(speed_force / 100, 0, 0));
     }
 
     public void Abduct(GameObject gameObject)
@@ -152,12 +128,21 @@ public class UFOScript : MonoBehaviour {
             {
                 Debug.Log("Player One Wins!");
             }
-            
+
             CancelInvoke("MaybeRunBeam");
         }
         else
         {
             StartCoroutine(Abductor(gameObject));
+        }
+    }
+
+    IEnumerator BeamEngine()
+    {
+        while(this.beamActive)
+        {
+            Instantiate(beam, this.transform.position, this.transform.rotation, this.transform);
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -175,9 +160,36 @@ public class UFOScript : MonoBehaviour {
                 new Vector3(0, 0, this.transform.localScale.z),
                 fracJourney
             );
-
             yield return null;
         }
         Destroy(other);
+    }
+
+    void CreateStopper()
+    {
+        GameObject stopper = (GameObject)Resources.Load("prefabs/Stopper", typeof(GameObject));
+        GameObject stopperInstance = Instantiate(
+            stopper,
+            new Vector3(
+                this.transform.position.x,
+                this.transform.position.y - this.beam.gameObject.GetComponent<BeamScript>().range,
+                this.transform.position.z
+            ),
+            this.transform.rotation
+        );
+        stopperInstance.transform.localScale = new Vector3(
+            this.transform.localScale.x * 1.1f, 
+            this.transform.localScale.y + this.beam.gameObject.GetComponent<BeamScript>().range / 2, 
+            this.transform.localScale.z
+        );
+    }
+
+    void ClearInvokes()
+    {
+        CancelInvoke("MoveRight");
+        CancelInvoke("MoveLeft");
+        CancelInvoke("DeactivateBeam");
+        CancelInvoke("UnlockMovement");
+        CancelInvoke("BeamEngine");
     }
 }

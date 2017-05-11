@@ -14,8 +14,8 @@ public class BeamScript : MonoBehaviour {
         this.startTime = Time.time;
         this.startPosition = this.transform.position;
     }
-	// Update is called once per frame
-	void Update () {
+
+    void Update () {
         if (this.transform.position.y - .1 <= this.startPosition.y - this.range)
         {
             Object.Destroy(this.gameObject);
@@ -37,13 +37,13 @@ public class BeamScript : MonoBehaviour {
         }
     }
 
-    public GameObject getUFO()
-    {
-        return this.transform.parent.gameObject;
-    }
-
     void OnTriggerEnter(Collider collider)
     {
         this.getUFO().GetComponent<UFOScript>().Abduct(collider.gameObject);
+    }
+
+    public GameObject getUFO()
+    {
+        return this.transform.parent.gameObject;
     }
 }

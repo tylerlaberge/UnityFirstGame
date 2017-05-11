@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TeleporterScript : MonoBehaviour {
 
@@ -11,8 +9,8 @@ public class TeleporterScript : MonoBehaviour {
         if (this.target == null)
         {
             GameObject stopper = (GameObject) Resources.Load("prefabs/Stopper", typeof(GameObject));
-            GameObject stopper_instance = Instantiate(stopper, this.transform.position, this.transform.rotation);
-            stopper_instance.transform.localScale = this.transform.localScale;     
+            GameObject stopperInstance = Instantiate(stopper, this.transform.position, this.transform.rotation);
+            stopperInstance.transform.localScale = this.transform.localScale;     
             Destroy(this.gameObject);
         }
     }
